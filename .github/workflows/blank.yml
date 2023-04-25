@@ -1,0 +1,151 @@
+#include <Adafruit_NeoPixel.h>
+Adafruit_NeoPixel strip(107, 2);
+static int state=0;
+int target;
+const int knock1=6;
+const int knock2=7;
+const int knock3=8;
+const int knock4=9;
+static int reps=0;
+
+void setup() {
+  Serial.begin(9600);
+  strip.begin();
+  pinMode(knock1,INPUT);
+  pinMode(knock2,INPUT);
+  pinMode(knock3,INPUT);
+  pinMode(knock4,INPUT);
+}
+
+void loop(){
+  
+    if(reps==1){ //this is how many reps I want to hit when practicing. Realistically it will never be this low 
+      state=5;
+    }
+    Serial.println(target);
+    switch(state){
+    case 0: 
+      reset();
+      numGen();
+      break;
+    case 1:
+      hitTarget(knock1,strip.Color(0,255,0));
+      break;
+    case 2:
+      hitTarget(knock2,strip.Color(0,255,0));
+      break;
+    case 3:
+      hitTarget(knock3,strip.Color(0,255,0));
+      break;
+    case 4:
+      hitTarget(knock4,strip.Color(0,255,0));
+      break;
+    case 5:
+      partyMode(strip.Color(255,0,0),strip.Color(0,255,0),strip.Color(0,0,255),300);
+      break;
+   }
+}
+
+void hitTarget(int knockPin, uint32_t aColor){
+      for(int i=60; i<strip.numPixels();i++){
+        strip.setPixelColor(i,strip.Color(0,0,255));
+        strip.show();
+      }
+  bool hit=digitalRead(knockPin);
+  if(hit==true){
+    reps++;
+    int startTime=millis();
+    strip.clear();
+    for(int i=60; i<strip.numPixels();i++){
+      strip.setPixelColor(i,aColor);
+      strip.show();
+      }
+      delay(500);
+      state=0;
+    }
+  }
+
+void numGen(){
+  target=random(1,5);
+  delay(1000);
+  if(target==1){
+    state=1;
+    strip.setPixelColor(0,strip.Color(50,200,0));
+    strip.show();
+  }
+  if(target==2){
+    state=2;
+    strip.setPixelColor(17,strip.Color(50,200,0));
+    strip.show();
+  }
+  if(target==3){
+    state=3;
+    strip.setPixelColor(41,strip.Color(50,200,0));
+    strip.show();
+  }
+  if(target==4){
+    strip.setPixelColor(59,strip.Color(50,200,0));
+    strip.show();
+    state=4;
+  }
+}
+
+void partyMode(uint32_t c1,uint32_t c2, uint32_t c3, int anInterval){
+  static unsigned long startTime=millis();
+  static int tri=0;
+  strip.setBrightness(50);
+  if(millis()-startTime>=anInterval){
+      tri++;
+      if(tri==3){
+        tri=0;
+      }
+      startTime=millis();
+  }
+  //c1=blue c2=green c3=red
+  for(int i=0;i<strip.numPixels();i++){
+    switch(tri){
+      case 0:
+          if(i%3==0){
+            strip.setPixelColor(i,c1);
+          }
+          else if(i%3==1){
+            strip.setPixelColor(i,c2);
+          }
+          else if(i%3==2){
+            strip.setPixelColor(i,c3);
+          }
+        break;
+      case 1:
+        if(i%3==0){
+            strip.setPixelColor(i,c2);
+          }
+          else if(i%3==1){
+            strip.setPixelColor(i,c3);
+          }
+          else if(i%3==2){
+            strip.setPixelColor(i,c1);
+          }
+        break;
+      case 2:
+        if(i%3==0){
+            strip.setPixelColor(i,c3);
+          }
+          else if(i%3==1){
+            strip.setPixelColor(i,c1);
+          }
+          else if(i%3==2){
+            strip.setPixelColor(i,c2);
+          }
+        break;
+    }
+    strip.show();
+  }
+}
+
+void reset(){
+  for(int i=60; i<strip.numPixels();i++){
+        strip.setPixelColor(i,strip.Color(0,0,255));
+        strip.show();
+      }
+}
+    
